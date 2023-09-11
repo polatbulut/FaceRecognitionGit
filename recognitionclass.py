@@ -1,8 +1,6 @@
 import face_recognition
 import cv2
 import numpy as np
-import os
-import glob
 
 
 class SimpleFacerec:
@@ -42,13 +40,6 @@ class SimpleFacerec:
             # See if the face is a match for the known face(s)
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
             name = "Unknown"
-            """
-            # # If a match was found in known_face_encodings, just use the first one.
-            if True in matches:
-                first_match_index = matches.index(True)
-                name = self.known_face_names[first_match_index]
-                face_names.append(name)
-            """
             # Use the known face with the smallest distance to the new face
             face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
