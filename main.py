@@ -13,7 +13,6 @@ black_data = "0xFFD8FFE000104A46494600010100000100010000FFDB0084000906070D0D0D0D
 class Main:
     def __init__(self):
         self.faceRec = SimpleFacerec()
-        self.camera_count = count_connected_cameras()
 
         l_server = 'localhost'
         l_database = 'personal_data'
@@ -28,8 +27,8 @@ class Main:
         password = 's1213145!'
         self.meyer_database = pymssql.connect(server=server, database=database, user=username, password=password)
         self.meyer_cursor = self.meyer_database.cursor()
-        # meyer_query = f"SELECT sicilid, fotoimage FROM SicilFoto WHERE fotoimage NOT LIKE {black_data} ORDER BY sicilid"
-        meyer_query = "SELECT sf.sicilid, sf.fotoimage FROM SicilFoto sf WHERE sf.sicilid IN (SELECT s.ID FROM Sicil s WHERE (s.Bolum = 6 OR s.Bolum = 8 OR s.Bolum = 9 OR s.Bolum = 11 OR s.Bolum = 14 OR s.Bolum = 13  OR s.Bolum = 14 OR s.Bolum = 42) AND CikisTarih IS NULL)"
+        meyer_query = f"SELECT sicilid, fotoimage FROM SicilFoto WHERE fotoimage NOT LIKE {black_data} ORDER BY sicilid"
+        # meyer_query = "SELECT sf.sicilid, sf.fotoimage FROM SicilFoto sf WHERE sf.sicilid IN (SELECT s.ID FROM Sicil s WHERE (s.Bolum = 6 OR s.Bolum = 8 OR s.Bolum = 9 OR s.Bolum = 11 OR s.Bolum = 14 OR s.Bolum = 13  OR s.Bolum = 14 OR s.Bolum = 42) AND CikisTarih IS NULL)"
         self.meyer_cursor.execute(meyer_query)
         self.meyer_blob_data_list = self.meyer_cursor.fetchall()
         self.local_cursor.execute("SELECT sicilid, fotoimage FROM sicilfoto WHERE sicilid = 0")
@@ -41,14 +40,12 @@ class Main:
             image = Image.open(blob_stream)
             self.meyer_dict[sicilid] = image
 
-        self.load_images()
-
     def load_images(self):
         self.faceRec.load_encoding_images(self.meyer_dict)
         self.process(0)
 
     def commit_to_database(self, input_name, input_time, ship_id, device_id):
-        query = f"UPDATE bsy_SicilYuzOkutmaLog SET Datetime = '{input_time}', MerdivenID = '{ship_id}', DeviceID = '{device_id}' WHERE SicilID = {input_name}"
+        query = f"UPDATE bsy_SicilYuzOkutmaLog SET Datetime = '{input_time}', LocationID = '{ship_id}', DeviceID = '{device_id}' WHERE SicilID = {input_name}"
         print("\n" + query)
         self.meyer_cursor.execute(query)
         self.meyer_database.commit()
@@ -56,7 +53,8 @@ class Main:
     def process(self, camera_id):
         ship_id = input("Ship ID: ")
         device_id = input("Device ID: ")
-        camera = cv2.VideoCapture(camera_id)
+        url = "rtsp://polat:polat1234@192.168.100.40:554"
+        camera = cv2.VideoCapture(url)
         known_names = []
         last_execution_time = datetime.datetime.now()
         while True:
