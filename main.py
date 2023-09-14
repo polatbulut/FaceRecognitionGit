@@ -11,7 +11,7 @@ black_data = "0xFFD8FFE000104A46494600010100000100010000FFDB0084000906070D0D0D0D
 
 
 class Main:
-    def __init__(self):
+    def __init__(self, flag):
         self.faceRec = SimpleFacerec()
 
         l_server = 'localhost'
@@ -27,9 +27,12 @@ class Main:
         password = 's1213145!'
         self.meyer_database = pymssql.connect(server=server, database=database, user=username, password=password)
         self.meyer_cursor = self.meyer_database.cursor()
-        meyer_query = f"SELECT sicilid, fotoimage FROM SicilFoto WHERE fotoimage NOT LIKE {black_data} ORDER BY sicilid"
-        # meyer_query = "SELECT sf.sicilid, sf.fotoimage FROM SicilFoto sf WHERE sf.sicilid IN (SELECT s.ID FROM Sicil s WHERE (s.Bolum = 6 OR s.Bolum = 8 OR s.Bolum = 9 OR s.Bolum = 11 OR s.Bolum = 14 OR s.Bolum = 13  OR s.Bolum = 14 OR s.Bolum = 42) AND CikisTarih IS NULL)"
-        self.meyer_cursor.execute(meyer_query)
+        meyer_query_complete = f"SELECT sicilid, fotoimage FROM SicilFoto WHERE fotoimage NOT LIKE {black_data} ORDER BY sicilid"
+        meyer_query = "SELECT sf.sicilid, sf.fotoimage FROM SicilFoto sf WHERE sf.sicilid IN (SELECT s.ID FROM Sicil s WHERE (s.Bolum = 6 OR s.Bolum = 8 OR s.Bolum = 9 OR s.Bolum = 11 OR s.Bolum = 14 OR s.Bolum = 13  OR s.Bolum = 14 OR s.Bolum = 42) AND CikisTarih IS NULL)"
+        if flag:
+            self.meyer_cursor.execute(meyer_query_complete)
+        else:
+            self.meyer_cursor.execute(meyer_query)
         self.meyer_blob_data_list = self.meyer_cursor.fetchall()
         self.local_cursor.execute("SELECT sicilid, fotoimage FROM sicilfoto WHERE sicilid = 0")
         stajyer = self.local_cursor.fetchall()
@@ -42,7 +45,6 @@ class Main:
 
     def load_images(self):
         self.faceRec.load_encoding_images(self.meyer_dict)
-        self.process(0)
 
     def commit_to_database(self, input_name, input_time, ship_id, device_id):
         query = f"UPDATE bsy_SicilYuzOkutmaLog SET Datetime = '{input_time}', LocationID = '{ship_id}', DeviceID = '{device_id}' WHERE SicilID = {input_name}"
@@ -50,11 +52,12 @@ class Main:
         self.meyer_cursor.execute(query)
         self.meyer_database.commit()
 
-    def process(self, camera_id):
-        ship_id = input("Ship ID: ")
-        device_id = input("Device ID: ")
-        url = "rtsp://polat:polat1234@192.168.100.40:554"
-        camera = cv2.VideoCapture(url)
+    def process(self, camera_st):
+        ship_id = "3"
+        device_id = "101"
+        url = "rtsp://polat:Polat1234!@192.168.100.47:554"
+        ip_camera = "rtsp://admin:cisco3477@192.168.20.101/cam/realmonitor?channel=1&subtype=0"
+        camera = cv2.VideoCapture(camera_st)
         known_names = []
         last_execution_time = datetime.datetime.now()
         while True:
@@ -99,4 +102,6 @@ def count_connected_cameras():
 
 
 if __name__ == "__main__":
-    app = Main()
+    app = Main(True)
+    app.load_images()
+    app.process(0)
