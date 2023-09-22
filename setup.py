@@ -11,4 +11,3 @@ setup(
     options={"build_exe": {"include_files": [(file, file) for file in files_to_include]}},
     executables=executables
 )
-

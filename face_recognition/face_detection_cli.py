@@ -48,13 +48,7 @@ def process_images_in_process_pool(images_to_check, number_of_cpus, model, upsam
     pool.starmap(test_image, function_parameters)
 
 
-@click.command()
-@click.argument('image_to_check')
-@click.option('--cpus', default=1, help='number of CPU cores to use in parallel. -1 means "use all in system"')
-@click.option('--model', default="hog", help='Which face detection model to use. Options are "hog" or "cnn".')
-@click.option('--upsample', default=0, help='How many times to upsample the image looking for faces. Higher numbers find smaller faces.')
 def main(image_to_check, cpus, model, upsample):
-    # Multi-core processing only supported on Python 3.4 or greater
     if (sys.version_info < (3, 4)) and cpus != 1:
         click.echo("WARNING: Multi-processing support requires Python 3.4 or greater. Falling back to single-threaded processing!")
         cpus = 1

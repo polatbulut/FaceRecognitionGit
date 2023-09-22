@@ -29,7 +29,7 @@ class SimpleFacerec:
 
         print(f"{len(image_dict) - count} Encoding images loaded")
 
-    def detect_known_faces(self, frame):
+    def detect_known_faces(self, frame, tolerance):
         small_frame = cv2.resize(frame, (0, 0), fx=self.frame_resizing, fy=self.frame_resizing)
         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
         face_locations = face_recognition.face_locations(rgb_small_frame)
@@ -37,10 +37,8 @@ class SimpleFacerec:
 
         face_names = []
         for face_encoding in face_encodings:
-            # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
+            matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance)
             name = "Unknown"
-            # Use the known face with the smallest distance to the new face
             face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:
